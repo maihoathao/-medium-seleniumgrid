@@ -1,0 +1,20 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="Github Tests" verbose="1" parallel="tests">
+    <!--    <test name="Browser test 1 : Chrome">-->
+    <!--        <parameter name="browser" value="chrome"/>-->
+    <!--        <parameter name="nodeUrl" value="http://localhost:4444/wd/hub"/>-->
+    <!--        <classes>-->
+    <!--                <class name="testcase.AccessGitTest"/>-->
+    <!--        </classes>-->
+    <!--    </test>-->
+
+    <test name="Browser test 2 : FireFox">
+        <parameter name="browser" value="firefox"/>
+        <parameter name="nodeUrl" value="http://localhost:4444/wd/hub"/>
+        <classes>
+            <class name="testcase.MediumTest"/>
+        </classes>
+    </test>
+
+</suite>
