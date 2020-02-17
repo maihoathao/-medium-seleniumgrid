@@ -5,15 +5,22 @@
  */
 package testcase;
 
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openxmlformats.schemas.drawingml.x2006.main.ThemeDocument;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
-import pages.MediumPages;
+import pages.ArticlePage;
+import pages.LoginPage;
 import utils.SetupUtil;
 
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.util.List;
 import java.util.Properties;
 
 public class MediumTest {
@@ -29,12 +36,11 @@ public class MediumTest {
         driver = SetupUtil.getDriver(browser,nodeUrl);
     }
 
-    // test login to git
-    @Test(priority = 1)
+    @Test (priority = 1)
     public void loginMedium() throws MalformedURLException{
         try {
             props = new Properties();
-            FileInputStream file = new FileInputStream("/Users/maihoathao/Projects/youtube-seleniumgrid/src/main/resources/config.properties");
+            InputStream file = getClass().getResourceAsStream("/config.properties");
             props.load(file);
             String getUrl = props.getProperty("url");
 //            String getEmail = props.getProperty("email");
@@ -42,18 +48,58 @@ public class MediumTest {
             driver.navigate().to(getUrl);
             System.out.println("Login to:" + getUrl);
             Thread.sleep(30);
-//            SetupUtil.implicitlyWait();
-
-            if (driver.findElement(MediumPages.avatar).isEnabled()){
+            if (driver.findElements(LoginPage.avatar).size() > 0) {
                 System.out.println("---> Login is available ");
             }
             else {
                 System.out.println("START LOGIN");
-                driver.findElement(MediumPages.signin).click();
-                driver.findElement(MediumPages.loginGoogle).click();
-                SetupUtil.explicitlyWait(driver, MediumPages.avatar);
-            }
+                JavascriptExecutor js = (JavascriptExecutor) driver;
+                js.executeScript("arguments[0].click();",driver.findElement(LoginPage.signIn));
+//                driver.findElement(LoginPage.signIn).click();
 
+                SetupUtil.explicitlyWait(driver,LoginPage.loginGoogle);
+                js.executeScript("arguments[0].click();", driver.findElement(LoginPage.loginGoogle));
+//                driver.findElement(LoginPage.loginGoogle).click();
+
+                SetupUtil.explicitlyWait(driver, LoginPage.emailGoogle);
+                String email = props.getProperty("email");
+                driver.findElement(LoginPage.emailGoogle).sendKeys(email);
+                driver.findElement(LoginPage.emailNext).click();
+
+                SetupUtil.explicitlyWait(driver, LoginPage.password);
+                String password = props.getProperty("password");
+                driver.findElement(LoginPage.password).sendKeys(password);
+                driver.findElement(LoginPage.passwordNext).click();
+
+                SetupUtil.explicitlyWait(driver, LoginPage.avatar);
+                if (driver.findElements(LoginPage.avatar).size() > 0) {
+                    System.out.println("Login successful");
+                } else {
+                    System.out.println("Login error");
+                }
+
+            }
+        }catch (Exception e){
+            System.out.println(e);
+        }
+    }
+    @Test (priority = 2)
+    public void articleTest() throws MalformedURLException{
+        try{
+//            List<WebElement> articles = driver.findElements(ArticlePage.articleClass);
+//            int count = articles.size();
+//            System.out.println("Get article list:" + count + articles);
+//            JavascriptExecutor js = (JavascriptExecutor) driver;
+            // List<WebElement> articles = (List<WebElement>) js.executeScript("return document.querySelectorAll('.extremeHero-smallCardContainer article');");
+
+            SetupUtil.explicitlyWait(driver, By.cssSelector(".extremeHero-smallCardContainer"));
+            System.out.println(driver.findElement(By.cssSelector("body")).getText());
+            List<WebElement> articles = driver.findElements(By.cssSelector(".extremeHero-smallCardContainer article"));
+            System.out.println("Get article list:" + articles.size());
+
+            WebElement article = articles.get(0);
+            System.out.println("Selected article:" + article.getText());
+            article.click();
         }catch (Exception e){
             System.out.println(e);
         }
