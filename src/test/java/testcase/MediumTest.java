@@ -97,6 +97,7 @@ public class MediumTest {
             WebElement article = articles.get(0);
             System.out.println("Selected article:" + article.getText());
             article.click();
+            System.out.println("Open Article success");
 
 //            // start write a comment
 //            SetupUtil.explicitlyWait(driver,ArticlePage.responseView);
