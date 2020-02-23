@@ -9,7 +9,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openxmlformats.schemas.drawingml.x2006.main.ThemeDocument;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
@@ -17,7 +16,6 @@ import pages.ArticlePage;
 import pages.LoginPage;
 import utils.SetupUtil;
 
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.List;
@@ -43,8 +41,6 @@ public class MediumTest {
             InputStream file = getClass().getResourceAsStream("/config.properties");
             props.load(file);
             String getUrl = props.getProperty("url");
-//            String getEmail = props.getProperty("email");
-//            String getPass = props.getProperty("password");
             driver.navigate().to(getUrl);
             System.out.println("Login to:" + getUrl);
             Thread.sleep(30);
@@ -91,15 +87,27 @@ public class MediumTest {
 //            System.out.println("Get article list:" + count + articles);
 //            JavascriptExecutor js = (JavascriptExecutor) driver;
             // List<WebElement> articles = (List<WebElement>) js.executeScript("return document.querySelectorAll('.extremeHero-smallCardContainer article');");
-
-            SetupUtil.explicitlyWait(driver, By.cssSelector(".extremeHero-smallCardContainer"));
-            System.out.println(driver.findElement(By.cssSelector("body")).getText());
-            List<WebElement> articles = driver.findElements(By.cssSelector(".extremeHero-smallCardContainer article"));
+            // Get list articles
+            SetupUtil.explicitlyWait(driver, ArticlePage.classAll);
+            System.out.println(driver.findElement(By.cssSelector("body")).getText());      // to check data response to test
+            List<WebElement> articles = driver.findElements(ArticlePage.articleClass);
             System.out.println("Get article list:" + articles.size());
 
+            // Choice the first article and view it
             WebElement article = articles.get(0);
             System.out.println("Selected article:" + article.getText());
             article.click();
+
+//            // start write a comment
+//            SetupUtil.explicitlyWait(driver,ArticlePage.responseView);
+//            driver.findElement(ArticlePage.responseView).click();
+//
+//            SetupUtil.explicitlyWait(driver,ArticlePage.responeWrite);
+//            driver.findElement(ArticlePage.responeWrite).click();
+
+            
+            
+
         }catch (Exception e){
             System.out.println(e);
         }
