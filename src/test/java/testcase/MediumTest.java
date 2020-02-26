@@ -9,11 +9,14 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.testng.ITestResult;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 import pages.ArticlePage;
 import pages.LoginPage;
+import utils.ScreenshotsUtil;
 import utils.SetupUtil;
 
 import java.io.InputStream;
@@ -24,6 +27,7 @@ import java.util.Properties;
 public class MediumTest {
     public static WebDriver driver;
     Properties props;
+    public ITestResult result;
 
     @BeforeClass(alwaysRun = true)
 
@@ -77,6 +81,7 @@ public class MediumTest {
             }
         }catch (Exception e){
             System.out.println(e);
+            ScreenshotsUtil.capture(driver);
         }
     }
     @Test (priority = 2)
@@ -106,13 +111,11 @@ public class MediumTest {
 //            SetupUtil.explicitlyWait(driver,ArticlePage.responeWrite);
 //            driver.findElement(ArticlePage.responeWrite).click();
 
-            
-            
-
         }catch (Exception e){
             System.out.println(e);
+            ScreenshotsUtil.capture(driver);
         }
-
     }
+
 
 }
