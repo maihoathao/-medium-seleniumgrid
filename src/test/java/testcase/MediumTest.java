@@ -5,20 +5,23 @@
  */
 package testcase;
 
+import com.aventstack.extentreports.ExtentReports;
+import com.aventstack.extentreports.ExtentTest;
+import com.aventstack.extentreports.MediaEntityBuilder;
+import com.aventstack.extentreports.Status;
+import com.aventstack.extentreports.reporter.ExtentHtmlReporter;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.testng.ITestResult;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Parameters;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import pages.ArticlePage;
 import pages.LoginPage;
-import utils.ScreenshotsUtil;
+import utils.ScreenShotUtil;
 import utils.SetupUtil;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.List;
@@ -27,10 +30,10 @@ import java.util.Properties;
 public class MediumTest {
     public static WebDriver driver;
     Properties props;
-    public ITestResult result;
+    ExtentReports extent;
+    ExtentTest logger;
 
     @BeforeClass(alwaysRun = true)
-
     // Call test driver of Grid with browsers setting on testng
     @Parameters({"browser","nodeUrl"})
     public void setUp(String browser, String nodeUrl) throws MalformedURLException {
@@ -38,8 +41,17 @@ public class MediumTest {
         driver = SetupUtil.getDriver(browser,nodeUrl);
     }
 
+    @BeforeTest // must to use BeforeTest to capture all @Test -> if use BeforeMethod report capture only @test finally
+    public void createReport(){
+        ExtentHtmlReporter reporter = new ExtentHtmlReporter("/Users/maihoathao/Projects/medium-seleniumgrid/reports/test-createReport.html");
+        extent = new ExtentReports();
+        extent.attachReporter(reporter);
+        logger=extent.createTest("StartMediumTest");
+    }
+
     @Test (priority = 1)
     public void loginMedium() throws MalformedURLException{
+        logger.log(Status.INFO, "Start login Medium");
         try {
             props = new Properties();
             InputStream file = getClass().getResourceAsStream("/config.properties");
@@ -48,6 +60,8 @@ public class MediumTest {
             driver.navigate().to(getUrl);
             System.out.println("Login to:" + getUrl);
             Thread.sleep(30);
+
+
             if (driver.findElements(LoginPage.avatar).size() > 0) {
                 System.out.println("---> Login is available ");
             }
@@ -81,11 +95,13 @@ public class MediumTest {
             }
         }catch (Exception e){
             System.out.println(e);
-            ScreenshotsUtil.capture(driver);
+            ScreenShotUtil.capture(driver);
         }
+
     }
     @Test (priority = 2)
     public void articleTest() throws MalformedURLException{
+        logger.log(Status.INFO, "Start open Article detail");
         try{
 //            List<WebElement> articles = driver.findElements(ArticlePage.articleClass);
 //            int count = articles.size();
@@ -93,13 +109,14 @@ public class MediumTest {
 //            JavascriptExecutor js = (JavascriptExecutor) driver;
             // List<WebElement> articles = (List<WebElement>) js.executeScript("return document.querySelectorAll('.extremeHero-smallCardContainer article');");
             // Get list articles
+
             SetupUtil.explicitlyWait(driver, ArticlePage.classAll);
             System.out.println(driver.findElement(By.cssSelector("body")).getText());      // to check data response to test
             List<WebElement> articles = driver.findElements(ArticlePage.articleClass);
             System.out.println("Get article list:" + articles.size());
 
             // Choice the first article and view it
-            WebElement article = articles.get(0);
+            WebElement article = articles.get(10);
             System.out.println("Selected article:" + article.getText());
             article.click();
             System.out.println("Open Article success");
@@ -113,9 +130,21 @@ public class MediumTest {
 
         }catch (Exception e){
             System.out.println(e);
-            ScreenshotsUtil.capture(driver);
+            ScreenShotUtil.capture(driver);
         }
     }
+    @AfterMethod
+    public void outputReport(ITestResult result) throws IOException {
+        if(result.getStatus()==ITestResult.FAILURE){
+//            String temp = ScreenShotUtil.getScreenshot(driver);
+            String temp = ScreenShotUtil.capture(driver);
+            logger.fail(result.getThrowable().getMessage(), MediaEntityBuilder.createScreenCaptureFromPath(temp).build());
+        }
+        extent.flush();
+    }
 
-
+    @AfterClass
+    public void tearDown(){
+        driver.quit();
+    }
 }
