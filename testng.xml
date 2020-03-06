@@ -5,7 +5,7 @@
     <!--        <parameter name="browser" value="chrome"/>-->
     <!--        <parameter name="nodeUrl" value="http://localhost:4444/wd/hub"/>-->
     <!--        <classes>-->
-    <!--                <class name="testcase.AccessGitTest"/>-->
+    <!--                <class name="testcase.MediumTest"/>-->
     <!--        </classes>-->
     <!--    </test>-->
 

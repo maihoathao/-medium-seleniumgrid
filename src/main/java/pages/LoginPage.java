@@ -13,5 +13,9 @@ public class LoginPage {
     public static final By passwordNext = By.id("passwordNext");
     public static final By avatar = By.className("avatar");
 
+    
+
+
+
 
 }
