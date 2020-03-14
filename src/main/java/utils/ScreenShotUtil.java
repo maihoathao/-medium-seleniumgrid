@@ -1,3 +1,8 @@
+/*
+@ Demo test for youtube
+@ Author : Hoi
+@ aug 2019
+ */
 package utils;
 
 import org.apache.commons.io.FileUtils;
@@ -13,12 +18,17 @@ import java.util.Date;
 
 public class ScreenShotUtil {
 
+    public static String capture(WebDriver driver) {
+        return capture(driver, "");
+    }
+
     // method 1 : use after Catch method
-    public static String capture(WebDriver driver){
+    public static String capture(WebDriver driver, String prefix) {
         byte[] buffer = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES);
         StringBuffer failpicPath = new StringBuffer();
 //        failpicPath.append(System.getProperty("user.home") + "/Projects/medium-seleniumgrid/screenshot/");
         failpicPath.append("./screenshot/");
+        failpicPath.append(prefix);
         String fn = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()).toString();
         failpicPath.append(fn);
         failpicPath.append(".png");
