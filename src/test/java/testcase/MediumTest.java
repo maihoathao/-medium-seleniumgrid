@@ -21,7 +21,7 @@ import org.testng.Assert;
 import org.testng.ITestResult;
 import org.testng.annotations.*;
 import pages.ArticlePage;
-import pages.LoginPage;
+import pages.HomePage;
 import utils.ExcelUtil;
 import utils.ScreenShotUtil;
 import utils.SetupUtil;
@@ -43,7 +43,6 @@ public class MediumTest {
     ExtentReports extent;
     ExtentTest logger;
     String excelFile = "/Users/maihoathao/Projects/medium-seleniumgrid/src/main/resources/testdata.xlsx";
-//    public static JavascriptExecutor js =(JavascriptExecutor)driver;
 
     @BeforeClass(alwaysRun = true)
     // Call test driver of Grid with browsers setting on TestNG
@@ -56,12 +55,10 @@ public class MediumTest {
     @BeforeTest // must to use BeforeTest to capture all @Test -> if use BeforeMethod report capture only @test finally
     public void Report(){
         reporter = new ExtentHtmlReporter("./reports/test-report.html");
-//        ExtentHtmlReporter reporter = new ExtentHtmlReporter(System.getProperty("user.home") + "/Projects/medium-seleniumgrid/reports/test-Report.html");
 //        reporter.config().setAutoCreateRelativePathMedia(true);
         extent = new ExtentReports();
         extent.attachReporter(reporter);
     }
-
 
     @Test (priority = 1, description = "Login Medium by Google account")
     public void loginMedium() throws MalformedURLException{
@@ -76,29 +73,29 @@ public class MediumTest {
             driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
 
 
-            if (driver.findElements(LoginPage.avatar).size() > 0) {
+            if (driver.findElements(HomePage.avatar).size() > 0) {
                 System.out.println("---> Login is available ");
             }
             else {
                 System.out.println("START LOGIN");
                 JavascriptExecutor js = (JavascriptExecutor) driver;
-                js.executeScript("arguments[0].click();",driver.findElement(LoginPage.signIn));
+                js.executeScript("arguments[0].click();",driver.findElement(HomePage.signIn));
 
-                SetupUtil.explicitlyWait(driver,LoginPage.loginGoogle);
-                js.executeScript("arguments[0].click();", driver.findElement(LoginPage.loginGoogle));
+                SetupUtil.explicitlyWait(driver, HomePage.loginGoogle);
+                js.executeScript("arguments[0].click();", driver.findElement(HomePage.loginGoogle));
 
-                SetupUtil.explicitlyWait(driver, LoginPage.emailGoogle);
+                SetupUtil.explicitlyWait(driver, HomePage.emailGoogle);
                 String email = props.getProperty("email");
-                driver.findElement(LoginPage.emailGoogle).sendKeys(email);
-                driver.findElement(LoginPage.emailNext).click();
+                driver.findElement(HomePage.emailGoogle).sendKeys(email);
+                driver.findElement(HomePage.emailNext).click();
 
-                SetupUtil.explicitlyWait(driver, LoginPage.password);
+                SetupUtil.explicitlyWait(driver, HomePage.password);
                 String password = props.getProperty("password");
-                driver.findElement(LoginPage.password).sendKeys(password);
-                driver.findElement(LoginPage.passwordNext).click();
+                driver.findElement(HomePage.password).sendKeys(password);
+                driver.findElement(HomePage.passwordNext).click();
 
-                SetupUtil.explicitlyWait(driver, LoginPage.avatar);
-                WebElement elm = driver.findElement(LoginPage.avatar);
+                SetupUtil.explicitlyWait(driver, HomePage.avatar);
+                WebElement elm = driver.findElement(HomePage.avatar);
                 String nickname = elm.findElement(By.tagName("img")).getAttribute("alt");
                 System.out.println(nickname);
 
@@ -121,29 +118,56 @@ public class MediumTest {
             System.out.println("Get text to search: " + textSearch);
 
 //            search element use svg
-//            WebElement barSearch = driver.findElement(LoginPage.metaBar);
+//            WebElement barSearch = driver.findElement(HomePage.metaBar);
 //            WebElement searchBtn = barSearch.findElement(By.xpath("//*[name()='svg']/*[name()='path']"));
 //            Actions builder = new Actions(driver);
 //            builder.click(searchBtn).build().perform();
 
-            WebElement searchButton = driver.findElement(LoginPage.searchBtn);
+            WebElement searchButton = driver.findElement(HomePage.searchBtn);
             JavascriptExecutor js = (JavascriptExecutor) driver;
             js.executeScript("arguments[0].click();", searchButton);
 
-            SetupUtil.explicitlyWait(driver, LoginPage.searchForm);
-            driver.findElement(LoginPage.searchClick).sendKeys(textSearch);
+            SetupUtil.explicitlyWait(driver, HomePage.searchForm);
+            driver.findElement(HomePage.searchClick).sendKeys(textSearch);
 
-            SetupUtil.explicitlyWait(driver, LoginPage.headingTab);
+            SetupUtil.explicitlyWait(driver, HomePage.headingTab);
             ScreenShotUtil.capture(driver, "search-result-");
+            System.out.println("---> Search Article success");
+
         } catch (Exception e) {
             System.out.println(e);
             ScreenShotUtil.capture(driver,"search-error-");
         }
     }
-//    @Test (priority = 3, description = "Open a Article in [New from your network] list")
-    public void articleTest() throws MalformedURLException{
+    @Test(priority = 3, description = "Open a Article which matching with testcase 2")
+    public void openArticle() throws MalformedURLException {
+        logger = extent.createTest("Testcase3: Open Article");
+        try {
+            SetupUtil.explicitlyWait(driver,ArticlePage.listCount);
+            WebElement listArticle = driver.findElement(ArticlePage.listCount);
+            List<WebElement> countArticles = listArticle.findElements(ArticlePage.articleCount);
+//            List<WebElement> countArticles = driver.findElements(ArticlePage.articleCount); // count by this way is ok
+            System.out.println("List Articles: " + countArticles.size());
+            WebElement article = countArticles.get(0);
+            article.click();
+            ScreenShotUtil.capture(driver, "article-detail-");
+
+        } catch (Exception e) {
+            System.out.println(e);
+            ScreenShotUtil.capture(driver,"openArticle-error-");
+        }
+    }
+
+//    @Test (priority = 3, description = "Open a Article in [New from your network] list at Home page")
+    public void articleTest() throws MalformedURLException {
+//        Back to homepage and choose a article in list
+        WebElement home = driver.findElement(ArticlePage.homeLink);
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        js.executeScript("arguments[0].click()",home);
+        ScreenShotUtil.capture(driver,"homepage-");
+
         logger = extent.createTest("Testcase 3: Test open article");
-        try{
+        try {
             SetupUtil.explicitlyWait(driver, ArticlePage.classAll);
 //            System.out.println(driver.findElement(By.cssSelector("body")).getText());      // to check data response to test
             List<WebElement> articles = driver.findElements(ArticlePage.articleClass);
@@ -169,16 +193,20 @@ public class MediumTest {
 //            SetupUtil.explicitlyWait(driver,ArticlePage.responeWrite);
 //            driver.findElement(ArticlePage.responeWrite).click();
 
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println(e);
             ScreenShotUtil.capture(driver,"article-detail-error-");
             logger.log(Status.FAIL,"open article fail");
         }
     }
+
+
+
+
+
     @AfterMethod
     public void getResult(ITestResult result) throws IOException {
-        if(result.getStatus()==ITestResult.FAILURE){
-//            String temp = ScreenShotUtil.getScreenshot(driver);
+        if (result.getStatus()==ITestResult.FAILURE) {
             String temp = ScreenShotUtil.capture(driver,"error-");
             logger.fail(result.getThrowable().getMessage(), MediaEntityBuilder.createScreenCaptureFromPath(temp).build());
         }
@@ -186,7 +214,7 @@ public class MediumTest {
     }
 
     @AfterClass
-    public void tearDown(){
+    public void tearDown() {
         driver.quit();
     }
 }
