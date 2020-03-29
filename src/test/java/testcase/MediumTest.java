@@ -1,5 +1,5 @@
 /*
-@ Demo test for youtube
+@ Demo test for Medium
 @ Author : Hoi
 @ aug 2019
  */
@@ -109,19 +109,13 @@ public class MediumTest {
         }
     }
 
-    @Test (priority = 2, description = " Input and search data input from excel")
-    public void search() throws MalformedURLException{
+    @Test (priority = 2, description = " Input and searchArticle data input from excel")
+    public void searchArticle() throws MalformedURLException{
         logger = extent.createTest("Testcase2 : Search Article");
         try {
             sheet = ExcelUtil.readExcel(excelFile,"search_article");
             String textSearch = sheet.getRow(1).getCell(1).getStringCellValue();
-            System.out.println("Get text to search: " + textSearch);
-
-//            search element use svg
-//            WebElement barSearch = driver.findElement(HomePage.metaBar);
-//            WebElement searchBtn = barSearch.findElement(By.xpath("//*[name()='svg']/*[name()='path']"));
-//            Actions builder = new Actions(driver);
-//            builder.click(searchBtn).build().perform();
+            System.out.println("Get text to searchArticle: " + textSearch);
 
             WebElement searchButton = driver.findElement(HomePage.searchBtn);
             JavascriptExecutor js = (JavascriptExecutor) driver;
@@ -129,28 +123,48 @@ public class MediumTest {
 
             SetupUtil.explicitlyWait(driver, HomePage.searchForm);
             driver.findElement(HomePage.searchClick).sendKeys(textSearch);
+            ScreenShotUtil.capture(driver, "searchArticle-result-");
 
-            SetupUtil.explicitlyWait(driver, HomePage.headingTab);
-            ScreenShotUtil.capture(driver, "search-result-");
-            System.out.println("---> Search Article success");
+            SetupUtil.explicitlyWait(driver,ArticlePage.listCount);
+            WebElement postList = driver.findElement(ArticlePage.listCount);
+            List<WebElement> listArticles = postList.findElements(ArticlePage.articleCount);
 
+            boolean checkList = true;
+            for (WebElement getArticle : listArticles){
+                WebElement getTitle = getArticle.findElement(ArticlePage.h3Article);
+                String titleArticle = getTitle.getText();
+                String title = titleArticle.toLowerCase();
+                if (title.contains(textSearch)) {
+                    System.out.println("Item is ok: [" + textSearch + "]: " + title);
+                } else {
+                    System.out.println("Item is NOT ok: [" + textSearch + "]: " + title);
+                    checkList = false;
+                }
+            }
+            Assert.assertTrue(checkList, "List is not match --> ");
         } catch (Exception e) {
             System.out.println(e);
-            ScreenShotUtil.capture(driver,"search-error-");
+            ScreenShotUtil.capture(driver,"searchArticle-error-");
         }
     }
     @Test(priority = 3, description = "Open a Article which matching with testcase 2")
     public void openArticle() throws MalformedURLException {
         logger = extent.createTest("Testcase3: Open Article");
         try {
-            SetupUtil.explicitlyWait(driver,ArticlePage.listCount);
-            WebElement listArticle = driver.findElement(ArticlePage.listCount);
-            List<WebElement> countArticles = listArticle.findElements(ArticlePage.articleCount);
-//            List<WebElement> countArticles = driver.findElements(ArticlePage.articleCount); // count by this way is ok
+            List<WebElement> countArticles = driver.findElements(ArticlePage.articleCount);
             System.out.println("List Articles: " + countArticles.size());
             WebElement article = countArticles.get(0);
+            WebElement getH3Title = article.findElement(ArticlePage.h3Article);
+            String h3Title = getH3Title.getText();
+            System.out.println("H3 titile: " + h3Title);
             article.click();
             ScreenShotUtil.capture(driver, "article-detail-");
+
+            WebElement getH1Title = driver.findElement(ArticlePage.h1Article);
+            String h1Title = getH1Title.getText();
+            System.out.println("H1 title: " + h1Title);
+            Assert.assertEquals(SetupUtil.deAccent(h1Title), SetupUtil.deAccent(h3Title));
+            System.out.println("---> Open Article success");
 
         } catch (Exception e) {
             System.out.println(e);
@@ -186,12 +200,6 @@ public class MediumTest {
             Assert.assertEquals(getArticleText,articleText);
             System.out.println("---> Open Article success");
 
-//            // start write a comment
-//            SetupUtil.explicitlyWait(driver,ArticlePage.responseView);
-//            driver.findElement(ArticlePage.responseView).click();
-//
-//            SetupUtil.explicitlyWait(driver,ArticlePage.responeWrite);
-//            driver.findElement(ArticlePage.responeWrite).click();
 
         } catch (Exception e) {
             System.out.println(e);

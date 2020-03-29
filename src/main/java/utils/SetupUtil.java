@@ -1,5 +1,5 @@
 /*
-@ Demo test for youtube
+@ Demo test for Medium
 @ Author : Hoi
 @ aug 2019
  */
@@ -14,7 +14,9 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.Normalizer;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 public class SetupUtil {
     public static WebDriver driver;
@@ -52,4 +54,11 @@ public class SetupUtil {
         driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
     }
 
+//  replace character or accent character
+    public static String deAccent(String str) {
+        String nfdNormalizedString = Normalizer.normalize(str, Normalizer.Form.NFD);
+        Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+        String ret = pattern.matcher(nfdNormalizedString).replaceAll("");
+        return ret.replaceAll("[\\s\\p{Z}]", " ");
+    }
 }

@@ -14,5 +14,6 @@ public class ArticlePage {
 
     public static final By listCount = By.cssSelector(".js-postListHandle");
     public static final By articleCount = By.cssSelector(".js-block");
-
+    public static final By h3Article = By.cssSelector("h3"); // title before open detail
+    public static final By h1Article = By.cssSelector("h1"); // title after open detail
 }

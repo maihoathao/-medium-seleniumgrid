@@ -10,7 +10,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="medium-seleniumgrid" target="1.5" />
+      <module name="medium-seleniumgrid" target="6" />
     </bytecodeTargetLevel>
   </component>
 </project>
