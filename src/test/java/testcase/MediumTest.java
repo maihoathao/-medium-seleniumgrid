@@ -10,13 +10,13 @@ import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.MediaEntityBuilder;
 import com.aventstack.extentreports.Status;
 import com.aventstack.extentreports.reporter.ExtentHtmlReporter;
+import org.apache.maven.plugin.surefire.runorder.Priority;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
+import org.openqa.selenium.interactions.Action;
+import org.openqa.selenium.interactions.Actions;
 import org.testng.Assert;
 import org.testng.ITestResult;
 import org.testng.annotations.*;
@@ -32,6 +32,7 @@ import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 public class MediumTest {
     public static WebDriver driver;
@@ -55,7 +56,6 @@ public class MediumTest {
     @BeforeTest // must to use BeforeTest to capture all @Test -> if use BeforeMethod report capture only @test finally
     public void Report(){
         reporter = new ExtentHtmlReporter("./reports/test-report.html");
-//        reporter.config().setAutoCreateRelativePathMedia(true);
         extent = new ExtentReports();
         extent.attachReporter(reporter);
     }
@@ -64,6 +64,7 @@ public class MediumTest {
     public void loginMedium() throws MalformedURLException{
         logger = extent.createTest("Testcase 1: Test Login");
         try {
+//            Get data from properties file
             props = new Properties();
             InputStream file = getClass().getResourceAsStream("/config.properties");
             props.load(file);
@@ -72,7 +73,7 @@ public class MediumTest {
             System.out.println("Login to:" + getUrl);
             driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
 
-
+//            Check status of login
             if (driver.findElements(HomePage.avatar).size() > 0) {
                 System.out.println("---> Login is available ");
             }
@@ -113,22 +114,25 @@ public class MediumTest {
     public void searchArticle() throws MalformedURLException{
         logger = extent.createTest("Testcase2 : Search Article");
         try {
+//            Get data inputted from excel to search article
             sheet = ExcelUtil.readExcel(excelFile,"search_article");
             String textSearch = sheet.getRow(1).getCell(1).getStringCellValue();
             System.out.println("Get text to searchArticle: " + textSearch);
 
+//            Click to search button
             WebElement searchButton = driver.findElement(HomePage.searchBtn);
             JavascriptExecutor js = (JavascriptExecutor) driver;
             js.executeScript("arguments[0].click();", searchButton);
 
+//            Click to search button with inputted data
             SetupUtil.explicitlyWait(driver, HomePage.searchForm);
             driver.findElement(HomePage.searchClick).sendKeys(textSearch);
             ScreenShotUtil.capture(driver, "searchArticle-result-");
 
+//            Check search result,get list data, with each item in list, compare with data is inputted
             SetupUtil.explicitlyWait(driver,ArticlePage.listCount);
             WebElement postList = driver.findElement(ArticlePage.listCount);
             List<WebElement> listArticles = postList.findElements(ArticlePage.articleCount);
-
             boolean checkList = true;
             for (WebElement getArticle : listArticles){
                 WebElement getTitle = getArticle.findElement(ArticlePage.h3Article);
@@ -145,70 +149,88 @@ public class MediumTest {
         } catch (Exception e) {
             System.out.println(e);
             ScreenShotUtil.capture(driver,"searchArticle-error-");
+            logger.log(Status.FAIL, "Search Article un-success");
         }
     }
+
     @Test(priority = 3, description = "Open a Article which matching with testcase 2")
     public void openArticle() throws MalformedURLException {
         logger = extent.createTest("Testcase3: Open Article");
         try {
+//            In Article list above, Open the first Article
             List<WebElement> countArticles = driver.findElements(ArticlePage.articleCount);
             System.out.println("List Articles: " + countArticles.size());
             WebElement article = countArticles.get(0);
             WebElement getH3Title = article.findElement(ArticlePage.h3Article);
             String h3Title = getH3Title.getText();
-            System.out.println("H3 titile: " + h3Title);
+            System.out.println("Chosen Article: " + h3Title);
             article.click();
             ScreenShotUtil.capture(driver, "article-detail-");
 
+//            Compare title of article before and after click
             WebElement getH1Title = driver.findElement(ArticlePage.h1Article);
             String h1Title = getH1Title.getText();
-            System.out.println("H1 title: " + h1Title);
-            Assert.assertEquals(SetupUtil.deAccent(h1Title), SetupUtil.deAccent(h3Title));
+            System.out.println("Opened article: " + h1Title);
+            Assert.assertEquals(SetupUtil.deAccent(h1Title), SetupUtil.deAccent(h3Title));// using deAccent to covert regex characters.
             System.out.println("---> Open Article success");
 
         } catch (Exception e) {
             System.out.println(e);
             ScreenShotUtil.capture(driver,"openArticle-error-");
+            logger.log(Status.FAIL, "Open detail article is error");
         }
     }
 
-//    @Test (priority = 3, description = "Open a Article in [New from your network] list at Home page")
-    public void articleTest() throws MalformedURLException {
-//        Back to homepage and choose a article in list
-        WebElement home = driver.findElement(ArticlePage.homeLink);
-        JavascriptExecutor js = (JavascriptExecutor) driver;
-        js.executeScript("arguments[0].click()",home);
-        ScreenShotUtil.capture(driver,"homepage-");
-
-        logger = extent.createTest("Testcase 3: Test open article");
+    @Test (priority = 4, description = "Bookmark Article")
+    public void bookmarkArticle() throws MalformedURLException {
+        logger = extent.createTest("Testcase 4: Bookmark Article");
         try {
-            SetupUtil.explicitlyWait(driver, ArticlePage.classAll);
-//            System.out.println(driver.findElement(By.cssSelector("body")).getText());      // to check data response to test
-            List<WebElement> articles = driver.findElements(ArticlePage.articleClass);
-            System.out.println("Get article list:" + articles.size());
+//            Get list action perform with Article
+//            Because this page generated class auto so need get list action have the same tag, and then select follow item position
+            List<WebElement> actionsGroup = driver.findElements(ArticlePage.actionsGroup);
+            System.out.println("actions list: " + actionsGroup);
+            WebElement childBookmark = actionsGroup.get(3);
+            WebElement parentBookmark = (WebElement)((JavascriptExecutor) driver).executeScript("return arguments[0].parentNode;",childBookmark);
+            parentBookmark.click();
+            ScreenShotUtil.capture(driver, " bookmark-");
 
-            // Choice the first article and view it
-            WebElement article = articles.get(0);
-            WebElement H2Article = article.findElement(By.cssSelector("h2")); // get article in h2 tag
-            String articleText = H2Article.getText();
-            System.out.println("Choose article: " + articleText);
-            H2Article.click(); // must click to h2 tag, not execute to get(0)
+//           Need re-get list action because each times refresh page will be auto generated new class
+            List<WebElement> actionGroupReGet = driver.findElements(ArticlePage.actionsGroup);
+            WebElement childBookmarkReGet= actionGroupReGet.get(3);
+            WebElement childPath = childBookmarkReGet.findElement(ArticlePage.childPath);
 
-            WebElement H1Elm = driver.findElement(By.cssSelector("h1"));
-            String getArticleText = H1Elm.getText();
-            System.out.println("Opened Article: "+ getArticleText);
-            Assert.assertEquals(getArticleText,articleText);
-            System.out.println("---> Open Article success");
+//            if (childPath.getAttribute("fill-rule").isEmpty()){
+//                System.out.println("bookmark is NG");
+//            } else {
+//                String ruleText = childPath.getCssValue("fill-rule");
+//                System.out.println("Bookmark is ok" + ruleText);
+//            }
+
+
+            WebElement  dataPath = childPath.findElement(ArticlePage.rulePath);
+            String contentRule = dataPath.getAttribute("fill-rule");
+            if (contentRule != null){
+                System.out.println("Bookmark is OK, with content is: " + contentRule);
+            }
+            else {
+                System.out.println("bookmark is NG");
+            }
+
+
+//            Get tooltip, because tooltip existed in parent node of parentBookmark
+//            WebElement parentTooltip = (WebElement)((JavascriptExecutor) driver).executeScript("return arguments[0].parentNode;", parentBookmark);
+//            Actions action = new Actions(driver);
+//            action.moveToElement(parentTooltip).perform();
+//            String textTooltip = parentTooltip.getText();
+//            System.out.println(textTooltip);
 
 
         } catch (Exception e) {
             System.out.println(e);
-            ScreenShotUtil.capture(driver,"article-detail-error-");
-            logger.log(Status.FAIL,"open article fail");
+            ScreenShotUtil.capture(driver,"bookmark-error-");
+            logger.log(Status.FAIL, "Bookmark article is error");
         }
     }
-
-
 
 
 

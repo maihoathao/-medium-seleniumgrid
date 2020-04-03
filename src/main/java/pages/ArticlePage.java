@@ -16,4 +16,12 @@ public class ArticlePage {
     public static final By articleCount = By.cssSelector(".js-block");
     public static final By h3Article = By.cssSelector("h3"); // title before open detail
     public static final By h1Article = By.cssSelector("h1"); // title after open detail
+
+    public static final By actionsGroup = By.cssSelector("article button>svg, article a>svg"); // Has 5 items ( Twitter, Linkedin, FK, bookmark, Mute/report)
+    public static final By childPath = By.cssSelector("path");
+    public static final By rulePath = By.cssSelector("fill-rule");
+
+
+
+
 }
