@@ -199,14 +199,6 @@ public class MediumTest {
             WebElement childBookmarkReGet= actionGroupReGet.get(3);
             WebElement childPath = childBookmarkReGet.findElement(ArticlePage.childPath);
 
-//            if (childPath.getAttribute("fill-rule").isEmpty()){
-//                System.out.println("bookmark is NG");
-//            } else {
-//                String ruleText = childPath.getCssValue("fill-rule");
-//                System.out.println("Bookmark is ok" + ruleText);
-//            }
-
-
             WebElement  dataPath = childPath.findElement(ArticlePage.rulePath);
             String contentRule = dataPath.getAttribute("fill-rule");
             if (contentRule != null){
@@ -231,9 +223,7 @@ public class MediumTest {
             logger.log(Status.FAIL, "Bookmark article is error");
         }
     }
-
-
-
+    
     @AfterMethod
     public void getResult(ITestResult result) throws IOException {
         if (result.getStatus()==ITestResult.FAILURE) {
